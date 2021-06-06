@@ -4,7 +4,8 @@ const mongoose = require('mongoose')
 mongoose.connect('mongodb://127.0.0.1:27017/task-manager-apiCo', {
     useNewUrlParser: true, 
     useCreateIndex: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true, // depracation warning i kaldırmak için ekledik
+    useFindAndModify: false // depracation warning i kaldırmak için ekledik
 })
 
 /* const User = mongoose.model('User', {
@@ -47,7 +48,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/task-manager-apiCo', {
     }
 }) */
 
-const Task = mongoose.model('Task', { // model ismin iküçük harfe çevirip çoğul hale getirerek colleciton name olarak atar
+/* const Task = mongoose.model('Task', { // model ismin iküçük harfe çevirip çoğul hale getirerek colleciton name olarak atar
     description: {
         type: String,
         required: true,
@@ -57,7 +58,7 @@ const Task = mongoose.model('Task', { // model ismin iküçük harfe çevirip ç
         type: Boolean,
         default: false
     }
-})
+}) */
 
  /* const me = new User({
     name: 'Dogan',
