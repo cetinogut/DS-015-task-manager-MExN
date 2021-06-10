@@ -9,4 +9,7 @@ router.get('/testCo', (req, res) => {
 //app.use(router) // bu satır olmadan router.get veya router.post çalışmaz
 //bu satırı index js e taşıdık. routeler burada. buradan export edip index te bu dosyayı alıyoruz. Ayrıca app.use ile orada middleware i eklememiz lazım.
 
+ 
+
+
 module.exports = router

@@ -48,7 +48,14 @@ router.patch('/tasks/:id', async (req, res) => {
     }
 
     try {
-        const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const task = await Task.findById(req.params.id)
+
+        /* updates.forEach((update) => {
+            user[update] = req.body[update] // burada bracket notation kullanıyoruz çünkü değerler dinamik olarak arrayden geliyor ve . notation kullanamayacağız.
+        }) */
+        updates.forEach((update) => task[update] = req.body[update]) // yukarının short hand formu
+        await task.save() // burada middleware devreye girecek
+        //const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
 
         if (!task) {
             return res.status(404).send()
