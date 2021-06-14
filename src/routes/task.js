@@ -1,10 +1,14 @@
 const express = require('express')
 const Task = require('../models/task')
+const auth = require('../middleware/auth')// added for user authentication
 const router = new express.Router()
 
-router.post('/tasks', async (req, res) => {
-    const task = new Task(req.body)
-
+router.post('/tasks', auth, async (req, res) => { // added auth as a second argument for authentication
+    //const task = new Task(req.body) // the version before auth
+    const task = new Task({ // updated the lane above to fit for authenticatiın. Now I have added user id as for the owner filed.
+        ...req.body, // the task description and completed if provided
+        owner: req.user._id // this comes from auth
+    })
     try {
         await task.save()
         res.status(201).send(task)

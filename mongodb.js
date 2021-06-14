@@ -4,12 +4,10 @@
 // const MongoClient = mongodb.MongoClient
 // const ObjectID = mongodb.ObjectID
 // yukarıdaki üç satırı destructuring ile aşağıdaki gibi yapabiliriz:
-
 const { MongoClient, ObjectID } = require('mongodb')  // bu mongodb native driverdir
 
 const connectionURL = 'mongodb://127.0.0.1:27017'
-const databaseName = 'task-managerCo'
-
+const databaseName = 'task-managerCo' // this database is created below after the connection is set. 
 const id = new ObjectID() // this a func that creates ID for us
 // console.log(id) // bu id nin string halidir
 // console.log(id.id) // bu id nin binary halidir.
@@ -26,7 +24,7 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true, useUnifiedTopology: 
 
     console.log('Connected correctly...') // if no error occurs this message mean a good connection
 
-    const db = client.db(databaseName) // this automatically creates the database
+    const db = client.db(databaseName) // this automatically creates the database. if it is not exist. We ca ndrop the database . It will be created again. But the data wil be lost.
 
     //DELETE deleteOne, deleteMany
     /* db.collection('users').deleteMany({

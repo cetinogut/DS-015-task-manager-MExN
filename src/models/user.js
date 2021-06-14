@@ -51,14 +51,23 @@ const userSchema = new mongoose.Schema({
     }]
     /*,
 
-    role: {    
+    role: { // added here to improve the project for role based auth.
         type: String,    
         enum: ['user', 'admin'],    
         required: true,    
         default: 'user'
     }*/
 })
-userSchema.methods.toJSON = function () { // sadece toJSON değişti, func içeri aslında aşağıdakiyle aynı. aslında bu method ile JSON.stringfy daki gibi istemediğimiz datayı kaldırdık.
+//class no 114: now we have task-user relationship. We added a new field in task document for owner who is creating that task. We ca nbring the user using owner (user_id) for a specific task with populate() method.
+// but what if we want to bring all tasks about a user. Now we will not approach as we did wity user token. Above in the model we created an array for tokens. But there is no need for tasks.
+// we will use a virtual property. virtual property is not an actual data stored in DB. but it is a relation ship between to entities
+userSchema.virtual('tasks', { // we will call this function later
+    ref:'Task',
+    localField: '_id', // one side of the relation is user id located here
+    foreignField: 'owner' // the other side of the relation fro mthe other model
+})
+
+userSchema.methods.toJSON = function () { // sadece toJSON değişti, func içeriği aslında aşağıdakiyle aynı. aslında bu method ile JSON.stringfy daki gibi istemediğimiz datayı kaldırdık.
     const user = this
     const userObject = user.toObject()
 
@@ -71,10 +80,8 @@ userSchema.methods.toJSON = function () { // sadece toJSON değişti, func içer
 /* userSchema.methods.getPublicProfile = function () {
     const user = this
     const userObject = user.toObject()
-
     delete userObject.password // remove sensitive data from object
     delete userObject.tokens // remove sensitive data from object
-
     return userObject  // now we just return the unsensitive user data and current token for auth.
 } */
 userSchema.methods.generateAuthToken = async function () {        // creatd for user token, it is an instance method
@@ -116,6 +123,7 @@ userSchema.pre('save', async function (next) { // run a code before a user is sa
     next() // next ile burası bitirlimez ise bu func sürekli çalışır.
 })
 
-const User = mongoose.model('User', userSchema )
+const User = mongoose.model('User', userSchema ) // this is the user model name that we have to use in other files where we want to reach User model.
+// for example in task.js (model) we gave a ref to User. that ref model name should be same as with the name defined in this line.
 
 module.exports = User

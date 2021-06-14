@@ -25,11 +25,11 @@ router.post('/users/login', async (req, res) => {
         const user = await User.findByCredentials(req.body.email, req.body.password)
         const token = await user.generateAuthToken()
         //res.send(user) // retured the user
-        //res.send( {user, token }) // sending back an object consisting of user and token to the client but we are not keeping track of the token anywhere in the server.. We nned to update the user document to keep track of the token data
+        //res.send( {user, token }) // sending back an object consisting of user and token to the client but we are not keeping track of the token anywhere in the server.. We need to update the user document to keep track of the token data
                     // burada user a ait her bilgiyi -password ve token dahil -- gönderiyoruz ve bu çok sağlıklı değil seçici olmalıyız., bu yüzden getPublicProfile func u çağırıp bilgiler iistediğimiz şekilde düzenleyeceğiz.
-        //res.send( {user : user.getPublicProfile(), token }) // we define getPublicProfile func in USer model for user instance, öncede nsadece user varken bütün user bilgisi geliyordu, şimd imodel deki func a gidip süzüp getirioruz.
-        res.send( {user, token })// tekrar ilk başa döndük. çünkü getPublicProfile i her seferinde çağırmaktansa bunu otomatik olarak yapmak istiyoruz. Burası aynne kalırken model de toJson () kullanacağız
-                    // aslında express server data göndeririken JSON.sitringfy(data) methodunu çağırı.
+        //res.send( {user : user.getPublicProfile(), token }) // we define getPublicProfile func in USer model for user instance, önceden sadece user varken bütün user bilgisi geliyordu, şimdi model deki func a gidip süzüp getirioruz.
+        res.send( {user, token })// tekrar ilk başa döndük. çünkü getPublicProfile i her seferinde çağırmaktansa bunu otomatik olarak yapmak istiyoruz. Burası aynen kalırken model de toJson () kullanacağız
+                    // aslında express server data göndeririken JSON.sitringfy(data) methodunu çağırır.
     } catch (e) {
         res.status(400).send() // logimng in did not worked
     }
@@ -89,12 +89,31 @@ router.get('/users/:id', async (req, res) => {
         res.send(user) // send the user that we are loking for
 
     } catch (e){
-        if(e.name === 'CastError'){ // eğer id geçersiz ise 12 byte değilse 500 dönmesi ndiye eklendi
+        if(e.name === 'CastError'){ // eğer id geçersiz ise 12 byte değilse 500 dönmesin diye eklendi
             return res.status(400).send('Invalid id')
             }
             res.status(500).send()
     }
 })
+
+router.patch('/users/myself', auth, async (req, res) => {
+    const updates = Object.keys(req.body)
+    const allowedUpdates = ['name', 'email', 'password', 'age'] // allow update only on these property
+    const isValidOperation = updates.every((update) => allowedUpdates.includes(update)) // check if this is an valid update request
+
+    if (!isValidOperation) {
+        return res.status(400).send({ error: 'Invalid updates!' })
+    }
+
+    try {
+        updates.forEach((update) => req.user[update] = req.body[update])
+        await req.user.save()
+        res.send(req.user)
+    } catch (e) {
+        res.status(400).send(e)
+    }
+})
+
 
 // // bu admin için update olabilir. user kendisini update edecekse aşağıdaki ni kullandım
 // router.patch('/users/:id', async (req, res) => {
@@ -127,24 +146,17 @@ router.get('/users/:id', async (req, res) => {
 //     }
 // })
 
-router.patch('/users/myself', auth, async (req, res) => {
-    const updates = Object.keys(req.body)
-    const allowedUpdates = ['name', 'email', 'password', 'age']
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
-    if (!isValidOperation) {
-        return res.status(400).send({ error: 'Invalid updates!' })
-    }
-
+router.delete('/users/myself', auth, async (req, res) => {
     try {
-        updates.forEach((update) => req.user[update] = req.body[update])
-        await req.user.save()
+        console.log('before deleteOne...')
+        await req.user.remove() // mongose remove() is used here but deprecated. deleteOne() is better
+        //await req.user.deleteOne({ _id: req.user._id });
         res.send(req.user)
     } catch (e) {
-        res.status(400).send(e)
+        res.status(500).send()
     }
 })
-
 
 //this is delete without auth. Can be used as an admin delete later
 router.delete('/users/:id', async (req, res) => {
@@ -161,15 +173,5 @@ router.delete('/users/:id', async (req, res) => {
 })
 
 
-router.delete('/users/myself', auth, async (req, res) => {
-    try {
-        console.log('before deleteOne...')
-        await req.user.remove() // mongose remove() is used here but deprecated. deleteOne() is better
-        //await req.user.deleteOne({ _id: req.user._id });
-        res.send(req.user)
-    } catch (e) {
-        res.status(500).send()
-    }
-})
 
 module.exports = router
