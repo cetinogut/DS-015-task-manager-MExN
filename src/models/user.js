@@ -2,10 +2,11 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs') // hashing algorithms by design are not reversable.
 const jwt = require('jsonwebtoken')
+const Task = require ('./task') // task model is loaded for deleting the user tasks when the user is deleted. It is the middle ware at the end of this file.
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({ // user schema, Once a schema is defined, Mongoose lets you create a Model based on a specific schema. A Mongoose Model is then mapped to a MongoDB Document via the Model's schema definition.
     name: {
-        type: String,
+        type: String,                   // model ismini küçük harfe çevirip çoğul hale getirerek colleciton name olarak atar
         required: true,
         trim: true
     }, 
@@ -41,7 +42,7 @@ const userSchema = new mongoose.Schema({
                 throw new Error('Your password cannot contain "password" !!!')
             }
         }
-    },
+    }, 
 
     tokens: [{ // an array of token to keep track of created tokens
         token: {
@@ -57,6 +58,8 @@ const userSchema = new mongoose.Schema({
         required: true,    
         default: 'user'
     }*/
+}, {
+    timestamps: true // this is an option object and by default it is false. We made it true and automatically get createdat and updatedat fields in user object when we create a new user
 })
 //class no 114: now we have task-user relationship. We added a new field in task document for owner who is creating that task. We ca nbring the user using owner (user_id) for a specific task with populate() method.
 // but what if we want to bring all tasks about a user. Now we will not approach as we did wity user token. Above in the model we created an array for tokens. But there is no need for tasks.
@@ -110,15 +113,29 @@ userSchema.statics.findByCredentials = async (email, password) => {  // created 
     return user // if match return user
 }
 
-// hash the plain text password before saving
-userSchema.pre('save', async function (next) { // run a code before a user is saved
+// hash the plain text password before saving -- this is a pice of middle ware
+userSchema.pre('save', async function (next) { // run this code before a user is saved
     const user = this // we call next() when we are done
 
     console.log('just before saving the user!!!') // bunun yazdığını gördüğümüzde middleware in consistently runnnig olduğunu anladık şimd iaşağıda hashing yapabiliriz
 
     if(user.isModified('password')){
         user.password =  await bcrypt.hash(user.password, 8)
+        console.log('just hashed the user password, now we can save it to Db.')
     }
+
+    next() // next ile burası bitirlimez ise bu func sürekli çalışır.
+})
+
+// this is a middleware : delete user tasks when user is deleted... run this code before a user is removed
+//userSchema.pre('remove', async function (next) { // remove method is deprecated so I used deleteOne instead. (also in user model where I delete user.)
+  userSchema.pre('deleteOne', { document: true, query: false }, async function (next) {
+    const user = this // we call next() when we are done
+
+    console.log('just before deleting the user!!!') // bunun yazdığını gördüğümüzde middleware in consistently runnnig olduğunu anladık şimd iaşağıda hashing yapabiliriz
+
+    await Task.deleteMany({ owner: user._id})
+    console.log('just deleted user tasks, now we can delete the user from the Db.')
 
     next() // next ile burası bitirlimez ise bu func sürekli çalışır.
 })

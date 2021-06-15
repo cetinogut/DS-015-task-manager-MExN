@@ -150,8 +150,8 @@ router.patch('/users/myself', auth, async (req, res) => {
 router.delete('/users/myself', auth, async (req, res) => {
     try {
         console.log('before deleteOne...')
-        await req.user.remove() // mongose remove() is used here but deprecated. deleteOne() is better
-        //await req.user.deleteOne({ _id: req.user._id });
+        //await req.user.remove() // mongose remove() is used here but deprecated. deleteOne() is better
+        await req.user.deleteOne({ _id: req.user._id }); // this change also affects the middleware in user model about deleting user tasks before the user. Since remove is deprecated, I used deleteOne over there as well.
         res.send(req.user)
     } catch (e) {
         res.status(500).send()

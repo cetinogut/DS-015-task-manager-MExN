@@ -48,7 +48,7 @@ app.use(testCoRoute) // bu satır olmadan router.get veya router.post çalışma
 app.listen(port, () => console.log(`listening on http://localhost:${port}`));
 
 
-// added below to test some functionality. (find user given the task_id)
+/* // added below to test some functionality. (find user given the task_id)
 const Task = require('./models/task')
 
 const  testFindUser = async () => {
@@ -72,4 +72,4 @@ const  testFindTask = async () => {
   console.log('full tasks Co after populate: ' + user.tasks)
 }
 //testFindUser() uncomment to see the fwtching of user info based on task id.
-testFindTask()
+testFindTask() */
