@@ -49,7 +49,10 @@ const userSchema = new mongoose.Schema({ // user schema, Once a schema is define
             type: String,
             required: true
         }
-    }]
+    }],
+    avatar: {
+        type: Buffer // this going to allow us to store the buffer with binary image data along side the user info
+    }
     /*,
 
     role: { // added here to improve the project for role based auth.
@@ -76,6 +79,7 @@ userSchema.methods.toJSON = function () { // sadece toJSON değişti, func içer
 
     delete userObject.password // remove sensitive data from object
     delete userObject.tokens // remove sensitive data from object
+    delete userObject.avatar // avatar binary data çok büyük olduğundan her seferinde gidip gelmesini istemiyoruz, o yüzden JSONda kaldırdık.
 
     return userObject  // now we just return the unsensitive user data and current token for auth.
 }
@@ -83,7 +87,7 @@ userSchema.methods.toJSON = function () { // sadece toJSON değişti, func içer
 /* userSchema.methods.getPublicProfile = function () {
     const user = this
     const userObject = user.toObject()
-    delete userObject.password // remove sensitive data from object
+    delete userObject.password // remove sensitive data from object, bunlar postman da da görünmeyecek görünmesini istiyorsak buraları yorum yapmak gerekir.
     delete userObject.tokens // remove sensitive data from object
     return userObject  // now we just return the unsensitive user data and current token for auth.
 } */

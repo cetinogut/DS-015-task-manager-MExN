@@ -1,5 +1,6 @@
 const express = require('express')
 const multer = require('multer')
+const sharp = require('sharp')
 const User = require('../models/user')
 const auth = require('../middleware/auth')
 const router = new express.Router()
@@ -171,7 +172,8 @@ router.delete('/users/myself', auth, async (req, res) => {
     dest: 'images/avatars' // created this folder under the images manually, if no folder you get a 500 error no such directory
 }) */
 const upload = multer({ // this uploads with validation
-    dest: 'images/avatars',
+    // at the beginnig we saved data to images/avatar folder but in real app wecan save it there. Heroku-AWS will not allow it. We will save the avatar as binary data and that's why added a new field to user model avatar.
+    //dest: 'images/avatars', // destination folder for avatar. For dynamic folder check https://github.com/expressjs/multer/issues/58 or  https://github.com/expressjs/multer/issues/39
     limits: {
         fileSize: 1000000 // filesize 1MB
     },
@@ -185,8 +187,13 @@ const upload = multer({ // this uploads with validation
 })
 
 
-router.post('/users/myself/avatar', upload.single('avatar'), (req, res) => {
-    res.send()
+router.post('/users/myself/avatar', auth, upload.single('avatar'), async (req, res) => { // we are passing multiple arg to post: 1-path, 2-authenticated users only, 3-upload
+    const buffer = await sharp(req.file.buffer).resize({ width:250, height: 250 }).png().toBuffer() // we get the user image uploaded and convert it to png and resize to 250x250 image and put it into buffer
+    req.user.avatar = buffer  // user image is saved to its avatar field
+    // npm sharp added above in two lines and the line below now is commented out. We use shart to resize and to convert to png 
+    //req.user.avatar = req.file.buffer // now after removing dest above, we can reach avatar data via req.file.buffer, then we assign this binary data to user avatar field
+    await req.user.save() // since we made chamge to user profile, we have to save it
+    res.send()                                                                      // 3-validate and accept upload, 4-send back success message, 5- handle the error messages if occur
 }, (error, req, res, next) => {  // if smth goes wrong multer will threw an erro rand the error will be handled with this func
     res.status(400).send({ error: error.message })
   })
@@ -202,6 +209,32 @@ router.delete('/users/:id', async (req, res) => {
         res.send(user)
     } catch (e) {
         res.status(500).send()
+    }
+})
+
+// dlete user'a avatar
+router.delete('/users/myself/avatar', auth, async (req, res) => {
+    req.user.avatar = undefined // we have cleared the binary data
+    await req.user.save()
+    res.send()
+})
+
+// user will serve his user avatar
+// this  will set a url for user avatar
+router.get('/users/:id/avatar', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id) // finding the user by Id
+
+        if (!user || !user.avatar) { // if no user or if no avatar
+            throw new Error()
+        }
+
+        //res.set('Content-Type', 'image/jpg') // setting response header.. when we send json Content-Type is automatically set to Appication/jsonwebtoken
+        // since we changed the upload image with npm sharp, we converted img to png that's why  we commented the line above as the one below.
+        res.set('Content-Type', 'image/png')
+        res.send(user.avatar) //this is the user image
+    } catch (e) {
+        res.status(404).send() // no user
     }
 })
 
