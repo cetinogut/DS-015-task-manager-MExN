@@ -1,9 +1,16 @@
 const express = require('express')
+const multer = require('multer')
 const User = require('../models/user')
 const auth = require('../middleware/auth')
 const router = new express.Router()
 
 
+
+// see the use of auth middleware depending on the route specifics
+// witout middleware: new request => run route handler
+// with middleware: new request => do smth, => run route handler
+//
+// this a public route for rgitering user.. no auth required here so we don't run auth middleware
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
 
@@ -19,7 +26,7 @@ router.post('/users', async (req, res) => {
     }
 })
 
-// login for an existing user
+// login for an existing user ,no outh required here, this is a public route
 router.post('/users/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password)
@@ -75,7 +82,7 @@ router.get('/users/myself', auth, async (req, res) => { // bu route da auth midd
     res.send(req.user) // this func will only run if user is authicantated. No need for error handling here.
 }) 
 
-
+//TODO : update this part for admin role
 // aslında bu user getbyId normal userler için gerekmiyor. Admin için gerekli sadece. O yüzden bunu auth yapmadan kaldırdı programda. benim duruyor 
 router.get('/users/:id', async (req, res) => {
     const _id = req.params.id
@@ -146,7 +153,7 @@ router.patch('/users/myself', auth, async (req, res) => {
 //     }
 // })
 
-
+// route to delete for auth user's own profile
 router.delete('/users/myself', auth, async (req, res) => {
     try {
         console.log('before deleteOne...')
@@ -157,6 +164,32 @@ router.delete('/users/myself', auth, async (req, res) => {
         res.status(500).send()
     }
 })
+
+
+// route for uploading user avatar pic
+/* const upload = multer({  // this uploads eveything w/o validation
+    dest: 'images/avatars' // created this folder under the images manually, if no folder you get a 500 error no such directory
+}) */
+const upload = multer({ // this uploads with validation
+    dest: 'images/avatars',
+    limits: {
+        fileSize: 1000000 // filesize 1MB
+    },
+    fileFilter(req, file, cb) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) { // image file should be jpg, jpeg or png
+            return cb(new Error('Please upload an image'))
+        }
+
+        cb(undefined, true)
+    }
+})
+
+
+router.post('/users/myself/avatar', upload.single('avatar'), (req, res) => {
+    res.send()
+}, (error, req, res, next) => {  // if smth goes wrong multer will threw an erro rand the error will be handled with this func
+    res.status(400).send({ error: error.message })
+  })
 
 //this is delete without auth. Can be used as an admin delete later
 router.delete('/users/:id', async (req, res) => {

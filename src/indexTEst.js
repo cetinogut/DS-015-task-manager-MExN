@@ -38,13 +38,6 @@ app.use(userRoutes)
 app.use(taskRoutes)
 app.use(testCoRoute) // bu satır olmadan router.get veya router.post çalışmaz
 
-//
-// witout middleware: new request => run route handler
-//
-//  with middleware: new request => do smth, => run route handler
-//
-
-
 app.listen(port, () => console.log(`listening on http://localhost:${port}`));
 
 
@@ -65,6 +58,7 @@ const myFunction = async () => {
      const isMatch =  await bcrypt.compare(('251609Hc/* ').trim(), hashedPassword) //Hashing algorithms compare two hashed values.
      console.log(isMatch)
 }
+
 
 const jwt = require('jsonwebtoken')
 
@@ -100,3 +94,32 @@ const data = jwt.verify(token, 'thisismynewcourse')
  }
  //myFunction()
  myFunctionJWT()
+
+
+ // we have tested the func below t oadd relationship between user and the tasks.
+// this was originallin the index js. I have moved it to here to clean the index.js
+/* // added below to test some functionality. (find user given the task_id)
+const Task = require('./models/task')
+
+const  testFindUser = async () => {
+  const task = await Task.findById('60c72b7f4ab658350cc11c2a') // this is a task id from MongoDb. the id will change if the task deleted. Check it.
+  console.log('task objectCo: ' + task) // this returns the task object
+  console.log('ownerCo only id: ' + task.owner) // this rteturns the user id associated with the task
+
+  await task.populate('owner').execPopulate() // this line executes a further query based on ref relation in task model and fetches the whole user associated with that task
+  console.log('full user Co after populate: ' + task.owner) // now this returns  full user object associated with the task. Because we reached the user with popolate(method)
+}
+
+// added below to test some functionality. (find task given the user_id)
+const User = require('./models/user')
+
+const  testFindTask = async () => {
+  const user = await User.findById('60c7283bdbed303f481c5645') // this is a user id associated with a task
+  // now we find the user and we want to rtrieve the tasks on that user. 
+  console.log('user before populate: ' + user.tasks) // this will return undefined.
+  
+  await user.populate('tasks').execPopulate() // this line executes a further query based on ref relation in task model and fetches the whole user associated with that task
+  console.log('full tasks Co after populate: ' + user.tasks)
+}
+//testFindUser() uncomment to see the fwtching of user info based on task id.
+testFindTask() */

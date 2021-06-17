@@ -92,7 +92,7 @@ userSchema.methods.generateAuthToken = async function () {        // creatd for 
     const token = jwt.sign( { _id: user._id.toString()}, 'thisismynewcourse') // secret for generating token is here
 
     user.tokens = user.tokens.concat({ token }) // add new token into the tokens array
-    await user.save() // save toke nto the MongoDB
+    await user.save() // save token to the MongoDB
 
     return token
 
