@@ -8,7 +8,8 @@ const testCoRoute = require('./routes/testCo')
 
 
 const app = express(); // now the express server is up and running
-const port = process.env.PORT || 3000;
+//const port = process.env.PORT || 3000;
+const port = process.env.PORT; // bu heroku daki port olacak. localde 3000 de çalışıyordu yukarıdaki gib. fakat config/dev.env içine localhost portunu girdik.
 
 //const www = process.env.WWW || './';
 //app.use(express.static(www));

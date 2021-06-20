@@ -18,3 +18,11 @@ nodemon as development dependency:
 npm i nodemon --save-dev
 
 start develpoment server in task-manager folder : ==> npm run dev  // bu script i package.json a yazmıştık
+env variable ları ekledikten sonra onlar çalışabilsin diye package.json daki dev i "dev": "env-cmd -f ./config/dev.env nodemon src/index.js" şeklinde değiştirdik
+
+SendGrid: APIKey Name NodeJS-TaskManager : SG.-sfbC-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxFZwrgpLEYDIkdg is in safe place now dev.env
+
+
+MongoDB connection string mongoose.js içindedir. Onu da güven altına almak gerekir MONGODB_URL  yi .env içinde oluşturduk ve process.env.MONGODB_URL ile kod içinde ulaşabiliyoruz
+
+JWT : user.js modelindeki userSchema.methods.generateAuthToken func ile token üretiyoruz ve orad abir secret string kullanıyorduk. Onu da oradan alıp dev.env içine taşıdık.

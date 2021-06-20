@@ -9,7 +9,8 @@ const auth = async (req, res, next) => {
         const token = req.header('Authorization').replace('Bearer ', '') // we are accessing the header info. Get rid of the bearer part 'Bearer ', remove this part. and the specific field in the header we want to reach is Authorization
         console.log('Token from client: ' + token)
        
-        const decoded = jwt.verify(token, 'thisismynewcourse') // the token was generated in user.js in models folder.
+        //const decoded = jwt.verify(token, 'thisismynewcourse') // the token was generated in user.js in models folder. buradaki secret key imizi user model içinde getAuthToken da da kullanmıştık. Her iki yerdekini de dev.env içinde taşıyıp  variable yazarak güven altına aldık.
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
         const user = await User.findOne({ _id: decoded._id, 'tokens.token': token }) // find the user with correct id stored in token and check whether the token still in token list
 
         if (!user) {// no user

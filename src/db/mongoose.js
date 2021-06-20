@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
 //const validator = require('validator') modellere taşıdık
 
-mongoose.connect('mongodb://127.0.0.1:27017/task-manager-apiCo', {
+//mongoose.connect('mongodb://127.0.0.1:27017/task-manager-apiCo', { // bu hard coded değeri dev.env ye taşıyarak env variable şeklinde kullandık aşağıda
+mongoose.connect(process.env.MONGODB_URL, {
     useNewUrlParser: true, 
     useCreateIndex: true,
     useUnifiedTopology: true, // depracation warning i kaldırmak için ekledik

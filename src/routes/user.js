@@ -1,8 +1,9 @@
 const express = require('express')
-const multer = require('multer')
-const sharp = require('sharp')
+const multer = require('multer') // user for file uploads
+const sharp = require('sharp') // used for resizing images in user profile
 const User = require('../models/user')
 const auth = require('../middleware/auth')
+const { sendWelcomeEmail, sendCancelationEmail } = require('../emails/account') // as the user register t othe app we want to send him/her a welcome email.
 const router = new express.Router()
 
 
@@ -17,7 +18,8 @@ router.post('/users', async (req, res) => {
 
     try {
         await user.save()
-
+        sendWelcomeEmail(user.email, user.name) // as user is saved the line before, we ca nsend a welcome email
+                        // sending email is async. But we dont need to wait the email to reach to the user for the next line. For this reason we did not include await here.
         const token = await user.generateAuthToken()  // after the user is saved create a token
 
         //res.status(201).send(user)
@@ -132,22 +134,17 @@ router.patch('/users/myself', auth, async (req, res) => {
 //     if (!isValidOperation) {
 //         return res.status(400).send({ error: 'Invalid updates!' })
 //     }
-
 //     try {  // findbyIdand Update skips the mongoose and directly work with DB. to prevent this behaviour,
 //         const user = await User.findById(req.params.id)
-
 //         /* updates.forEach((update) => {
 //             user[update] = req.body[update] // burada bracket notation kullanıyoruz çünkü değerler dinamik olarak arrayden geliyor ve . notation kullanamayacağız.
 //         }) */
 //         updates.forEach((update) => user[update] = req.body[update]) // yukarının short hand formu
 //         await user.save() // burada middleware devreye girecek
-        
 //         //const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })// bunu yorum yapıp yukarıyı ekledik. Mongoose da update işlemi çalışsın diye..
-
 //         if (!user) {
 //             return res.status(404).send()
 //         }
-
 //         res.send(user)
 //     } catch (e) {
 //         res.status(400).send(e)
@@ -160,6 +157,7 @@ router.delete('/users/myself', auth, async (req, res) => {
         console.log('before deleteOne...')
         //await req.user.remove() // mongose remove() is used here but deprecated. deleteOne() is better
         await req.user.deleteOne({ _id: req.user._id }); // this change also affects the middleware in user model about deleting user tasks before the user. Since remove is deprecated, I used deleteOne over there as well.
+        sendCancelationEmail(req.user.email, req.user.name)    
         res.send(req.user)
     } catch (e) {
         res.status(500).send()
@@ -212,7 +210,7 @@ router.delete('/users/:id', async (req, res) => {
     }
 })
 
-// dlete user'a avatar
+// delete user'a avatar
 router.delete('/users/myself/avatar', auth, async (req, res) => {
     req.user.avatar = undefined // we have cleared the binary data
     await req.user.save()

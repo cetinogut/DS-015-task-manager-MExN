@@ -93,8 +93,8 @@ userSchema.methods.toJSON = function () { // sadece toJSON değişti, func içer
 } */
 userSchema.methods.generateAuthToken = async function () {        // creatd for user token, it is an instance method
     const user = this
-    const token = jwt.sign( { _id: user._id.toString()}, 'thisismynewcourse') // secret for generating token is here
-
+    //const token = jwt.sign( { _id: user._id.toString()}, 'thisisxxxxxxstringinmxxxxxxxxxxxxxxxxxxxxxxxxxxx') // secret for generating token is here
+    const token = jwt.sign( { _id: user._id.toString()}, process.env.JWT_SECRET) // yukarıdaki JWT üretim key ini de dev.env içine taşıdık. aynı string auth middleware inde de kullanılıyordu.
     user.tokens = user.tokens.concat({ token }) // add new token into the tokens array
     await user.save() // save token to the MongoDB
 
