@@ -12,7 +12,7 @@ const router = new express.Router()
 // witout middleware: new request => run route handler
 // with middleware: new request => do smth, => run route handler
 //
-// this a public route for rgitering user.. no auth required here so we don't run auth middleware
+// this a public route for registering user.. no auth required here so we don't run auth middleware
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
 
